@@ -1,0 +1,18 @@
+package android.hardware.serialport@1.0;
+
+struct SerialPortEvent {
+    int32_t what;
+    int32_t length;
+    vec<int32_t> data;
+};
+
+enum SerialPortType : int32_t {
+    VARIOUS = 0,
+    VDR = 1,
+    CAR_BODY = 2,
+    AIR = 3,
+    KEY = 4,
+    FCT = 5,
+    AUTOPILOT = 6,
+    TPMS = 7,
+};

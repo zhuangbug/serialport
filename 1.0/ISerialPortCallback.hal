@@ -1,0 +1,5 @@
+package android.hardware.serialport@1.0;
+
+interface ISerialPortCallback {
+    oneway onDataChange(SerialPortEvent event);
+};

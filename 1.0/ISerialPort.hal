@@ -1,0 +1,13 @@
+package android.hardware.serialport@1.0;
+
+import ISerialPortCallback;
+
+interface ISerialPort {
+   initSerialPort(string address, int32_t baudrate, int32_t flags);
+   startRead();
+   stopRead();
+   closeSerialPort();
+   sendSerialPort(vec<int32_t> buf, int32_t size) generates (bool res);
+   setCallback(int32_t type, ISerialPortCallback callback);
+   isOpen() generates (bool open);
+};
