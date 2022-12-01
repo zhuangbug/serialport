@@ -185,111 +185,6 @@ void addAck(int msgId, int msgType, int ackId, int cmd) {
     if (DEBUG) LOGD("addack  data msgId = %d  msgType = %d   ackId = %d  cmd = %d", ackInfo.data[2], ackInfo.data[4], ackInfo.data[5], ackInfo.data[6]);
 }
 
-void processGpsData(vector<int32_t> recvBuffer, int length) {
-	LOGD("processGpsData len:%d\n",length);
-	if(length < 44) {
-		LOGD("receiveBuffer--gps--not--enought");
-		return;
-	}
-	stringstream ss;
-	ss << "$GNRMC,";
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[11];
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[12];
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[13];
-	//ss << setfill('0') << setw(2) << hex <<recvBuffer[14];
-       	ss << ".000,";
-
-	int i0 = (int) ((recvBuffer[18] & 0xff) << 0 * 8);
-        int i1 = (int) ((recvBuffer[17] & 0xff) << 1 * 8);
-        int i2 = (int) ((recvBuffer[16] & 0xff) << 2 * 8);
-        int i3 = (int) ((recvBuffer[15] & 0xff) << 3 * 8);
-	int sum = i0 + i1 + i2 + i3;
-	double e = sum, f = 10000.0,f1 = 100.0,f2=10.0;
-	double num = e / f;
-	ss  << setprecision(4) << fixed << num << ",";
-
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-	i0 = (int) ((recvBuffer[22] & 0xff) << 0 * 8);
-        i1 = (int) ((recvBuffer[21] & 0xff) << 1 * 8);
-    	i2 = (int) ((recvBuffer[20] & 0xff) << 2 * 8);
-    	i3 = (int) ((recvBuffer[19] & 0xff) << 3 * 8);
-	e = i0 + i1 + i2 + i3;
-	num = e / f;
-	ss  << setprecision(4) << fixed << num << ",";
-
-	int fIndicator = recvBuffer[23];
-	int mode = recvBuffer[24];
-	ss << fIndicator << "," << mode << ",";
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-	i0 = (int) ((recvBuffer[26] & 0xff) << 0 * 8);
-    	i1 = (int) ((recvBuffer[25] & 0xff) << 1 * 8);
-	e = i0 + i1;
-	num = e/f1;
-	ss << setprecision(2) << fixed << num << ",";
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-	i0 = (int) ((recvBuffer[28] & 0xff) << 0 * 8);
-	i1 = (int) ((recvBuffer[27] & 0xff) << 1 * 8);
-	e = i0 + i1;
-	num = e/f1;
-	ss << setprecision(2) << fixed << num << ",";
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-	i0 = (int) ((recvBuffer[30] & 0xff) << 0 * 8);
-	i1 = (int) ((recvBuffer[29] & 0xff) << 1 * 8);
-	e = i0 + i1;
-	num = e/f1;
-	ss << setprecision(2) << fixed << num << ",";
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-        i0 = (int) ((recvBuffer[32] & 0xff) << 0 * 8);
-        i1 = (int) ((recvBuffer[31] & 0xff) << 1 * 8);
-        e = i0 + i1;
-        num = e/f1;
-        ss << setprecision(2) << fixed << num << ",";
-
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-        i0 = (int) ((recvBuffer[34] & 0xff) << 0 * 8);
-        i1 = (int) ((recvBuffer[33] & 0xff) << 1 * 8);
-        e = i0 + i1;
-        num = e/f2;
-        ss << setprecision(1) << fixed << num << ",";
-	int salt_fixed = recvBuffer[35];
-	ss << salt_fixed << ",";
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-        i0 = (int) ((recvBuffer[37] & 0xff) << 0 * 8);
-        i1 = (int) ((recvBuffer[36] & 0xff) << 1 * 8);
-        e = i0 + i1;
-        num = e/f1;
-        ss << setprecision(2) << fixed << num << ",";
-	num = e = sum = i0 = i1 = i2 = i3 = 0;
-        i0 = (int) ((recvBuffer[39] & 0xff) << 0 * 8);
-        i1 = (int) ((recvBuffer[38] & 0xff) << 1 * 8);
-        e = i0 + i1;
-        num = e/f1;
-        ss << setprecision(2) << fixed << num << ",";
-	
-	//40-43
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[40];
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[41];
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[42];
-	ss << setfill('0') << setw(2) << hex <<recvBuffer[43];
-	ss << ",";
-
-	int salt_visible = recvBuffer[44];
-	ss << dec << salt_visible  <<  ",";
-	for(int i = 0; i < salt_visible;i++) {
-		int salt_type = ((recvBuffer[45 + i*4]>>7) & 0x01);
-		int salt_id = (recvBuffer[45 + i*4] & 0x3f);
-		int elevation = recvBuffer[46 + i*4];
-		int azimuth = recvBuffer[47 + i*4];
-		int c_n0_dbhz = recvBuffer[48 + i*4];
-		stringstream temp;
-		temp << salt_type << "," << salt_id << "," << elevation << "," << azimuth << "," << c_n0_dbhz << ",";
-		//LOGD("temp:%s\n",temp.str().c_str());
-		ss << temp.str();
-	}
-	int len = write(gps_fd,ss.str().c_str(),ss.str().length());
-	LOGD("write--gps len:%d,%s\n",len, ss.str().c_str());	
-}
-
 //分发数据
 void dataReceive(vector<int32_t> receiveBuffer) {
     if (receiveBuffer.size() > 0) {
@@ -449,12 +344,6 @@ void dataReceive(vector<int32_t> receiveBuffer) {
                 (*ita).callback->onDataChange(event);
             }
         }
-	if(cmd == 0x45){
-		LOGD("dataReceive--gps:%d",mPtsOpen);
-		if(mPtsOpen) {
-			processGpsData(receiveBuffer, receiveBuffer.size());
-		}
-	}
     }
 }
 
@@ -576,31 +465,6 @@ void *runSimulate(void* run) {
 }
 //add for simulate data end
 
-void openPipe() {
-    unlink(GPSPIPE);
-    int ret = mkfifo(GPSPIPE,0777);
-    if(ret < 0) {
-            LOGD("mkfifo %s--error:%d %s\n", GPSPIPE, errno, strerror(errno));
-            return;
-    }
-    gps_fd =open(GPSPIPE,O_RDWR);  //打开管道文件
-    if(gps_fd < 0) {
-	    mPtsOpen = false;
-            LOGD("open %s error:%d %s\n", GPSPIPE, errno, strerror(errno));
-    } else {
-	    mPtsOpen = true;
-	    LOGD("openPipe %s success\n",GPSPIPE);
-	    int err = property_set("service.gps.pts_name", GPSPIPE);
-            if (err < 0) {
-            	LOGD("%s property set error %s\n", __FUNCTION__, strerror(errno));
-            }
-	    err = property_set("service.gps.pts_link", "1");
-	    if(err < 0) {
-	    	LOGD("property_set service.gps.pts_link err:%d  error:%d %s\n", err, errno, strerror(errno));
-	    }
-    }
-}
-
 // Methods from ::android::hardware::serialport::V1_0::ISerialPort follow.
 Return<void> SerialPort::initSerialPort(const hidl_string& address, int32_t baudrate, int32_t flags) {
     if (DEBUG) LOGD("initSerialPort");
@@ -646,7 +510,6 @@ Return<void> SerialPort::initSerialPort(const hidl_string& address, int32_t baud
         return Void();
     }
 
-    openPipe();
     return Void();
 }
 
